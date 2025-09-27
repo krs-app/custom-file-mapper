@@ -29,7 +29,7 @@ if st.button("Generate JSON") and uploaded_files:
     Files: {', '.join([f['filename'] for f in files_content])}
     """
 
-    # Full function schema with Python syntax fixes
+    # Full function schema, fixed for OpenAI
     function_schema = {
         "name": "return_questionnaire",
         "description": "Return the final questionnaire JSON exactly matching schema",
@@ -47,8 +47,8 @@ if st.button("Generate JSON") and uploaded_files:
                             "Add New Questions": {"type": "string", "enum": ["Yes", "No"]},
                             "Module": {"type": "string", "enum": ["Audit", "Compliance"]},
                             "Welcome Note Required": {"type": "string", "enum": ["Yes", "No"]},
-                            "Test Question for Compliance": {"type": ["string", None], "enum": ["TOD", "TOE", None]},
-                            "Compliance Test Type": {"type": ["string", None], "enum": ["Assessment Question", "Test Procedure", None]}
+                            "Test Question for Compliance": {"type": ["string", "null"], "enum": ["TOD", "TOE", None]},
+                            "Compliance Test Type": {"type": ["string", "null"], "enum": ["Assessment Question", "Test Procedure", None]}
                         },
                         "required": [
                             "Questionnaire Name",
@@ -66,10 +66,10 @@ if st.button("Generate JSON") and uploaded_files:
                         "type": "object",
                         "properties": {
                             "Section": {"type": "string", "minLength": 1},
-                            "L1 Sub Section": {"type": ["string", None]},
-                            "L2 Sub Section": {"type": ["string", None]},
-                            "L3 Sub Section": {"type": ["string", None]},
-                            "L4 Sub Section": {"type": ["string", None]},
+                            "L1 Sub Section": {"type": ["string", "null"]},
+                            "L2 Sub Section": {"type": ["string", "null"]},
+                            "L3 Sub Section": {"type": ["string", "null"]},
+                            "L4 Sub Section": {"type": ["string", "null"]},
                             "AD": {"type": "string", "minLength": 1},
                             "Citation": {"type": "string", "minLength": 1},
                             "Control ID": {"type": ["string", "integer"]},
@@ -113,12 +113,12 @@ if st.button("Generate JSON") and uploaded_files:
                             "Question Category": {"type": "string", "enum": ["Control", "Risk Register"]},
                             "Question Type": {"type": "string", "enum": ["Question", "Risk Assessment"]},
                             "Question Title": {"type": "string", "minLength": 1},
-                            "Question Help": {"type": ["string", None]},
+                            "Question Help": {"type": ["string", "null"]},
                             "Answer Sequence": {"type": "integer"},
                             "Answer Title": {"type": "string", "minLength": 1},
                             "Is Comment Required": {"type": "string", "enum": ["Yes", "No"]},
                             "Is Doc Required": {"type": "string", "enum": ["Yes", "No"]},
-                            "Document Help": {"type": ["string", None]},
+                            "Document Help": {"type": ["string", "null"]},
                             "Score": {"type": "number"}
                         },
                         "required": ["Question ID", "Question Category", "Question Type", "Question Title"]
@@ -147,5 +147,7 @@ if st.button("Generate JSON") and uploaded_files:
 
     except Exception as e:
         st.error(f"Error parsing JSON: {e}")
-        st.write("Raw response:")
-        st.write(response)
+        # Avoid NameError
+        if 'response' in locals():
+            st.write("Raw response:")
+            st.write(response)
