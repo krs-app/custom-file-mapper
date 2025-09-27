@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 import json
 
-st.title("GRC JSON Extractor with Function Calling 2")
+st.title("GRC JSON Extractor with Function Calling X")
 
 # Input OpenAI API key
 openai.api_key = st.text_input("Enter your OpenAI API Key", type="password")
@@ -29,7 +29,7 @@ if st.button("Generate JSON") and uploaded_files:
     Files: {', '.join([f['filename'] for f in files_content])}
     """
 
-    # Function schema compatible with OpenAI
+    # Function schema
     function_schema = {
         "name": "return_questionnaire",
         "description": "Return the final questionnaire JSON exactly matching schema",
@@ -124,7 +124,6 @@ if st.button("Generate JSON") and uploaded_files:
         }
     }
 
-    # Call OpenAI API
     try:
         response = openai.chat.completions.create(
             model="gpt-5-mini",
@@ -133,7 +132,8 @@ if st.button("Generate JSON") and uploaded_files:
             function_call={"name": "return_questionnaire"}
         )
 
-        function_response = response.choices[0].message["function_call"]["arguments"]
+        # Correct dot notation
+        function_response = response.choices[0].message.function_call.arguments
         result_json = json.loads(function_response)
 
         st.subheader("Parsed JSON")
