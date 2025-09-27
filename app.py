@@ -3,7 +3,7 @@ import openai
 import json
 import os
 
-st.title("GRC JSON Extractor with Function Calling")
+st.title("GRC JSON Extractor with Function Calling 1")
 
 # Input OpenAI API key
 openai.api_key = st.text_input("Enter your OpenAI API Key", type="password")
