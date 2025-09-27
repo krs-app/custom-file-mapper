@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 import json
 
-st.title("GRC JSON Extractor with Function Calling")
+st.title("GRC JSON Extractor with Function Calling 1")
 
 # Input OpenAI API key
 openai.api_key = st.text_input("Enter your OpenAI API Key", type="password")
@@ -29,7 +29,7 @@ if st.button("Generate JSON") and uploaded_files:
     Files: {', '.join([f['filename'] for f in files_content])}
     """
 
-    # Full function schema, fixed for OpenAI
+    # Function schema compatible with OpenAI
     function_schema = {
         "name": "return_questionnaire",
         "description": "Return the final questionnaire JSON exactly matching schema",
@@ -79,30 +79,24 @@ if st.button("Generate JSON") and uploaded_files:
                     }
                 },
                 "New AD-Citation-Control": {
-                    "anyOf": [
-                        {"type": "array", "maxItems": 0},
-                        {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "AD Name": {"type": "string", "minLength": 1},
-                                    "AD Description": {"type": "string", "minLength": 1},
-                                    "Control ID": {"type": "string", "minLength": 1},
-                                    "Control": {"type": "string", "minLength": 1},
-                                    "Control Description": {"type": "string", "minLength": 1},
-                                    "Control Impact Zone": {"type": "string", "enum": ["A.10 Cryptography", "A.12 Operations security"]},
-                                    "Citation": {"type": "string", "minLength": 1},
-                                    "Guidance": {"type": "string", "minLength": 1}
-                                },
-                                "required": [
-                                    "AD Name", "AD Description", "Control ID", "Control",
-                                    "Control Description", "Control Impact Zone", "Citation", "Guidance"
-                                ]
-                            },
-                            "minItems": 1
-                        }
-                    ]
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "AD Name": {"type": "string", "minLength": 1},
+                            "AD Description": {"type": "string", "minLength": 1},
+                            "Control ID": {"type": "string", "minLength": 1},
+                            "Control": {"type": "string", "minLength": 1},
+                            "Control Description": {"type": "string", "minLength": 1},
+                            "Control Impact Zone": {"type": "string", "enum": ["A.10 Cryptography", "A.12 Operations security"]},
+                            "Citation": {"type": "string", "minLength": 1},
+                            "Guidance": {"type": "string", "minLength": 1}
+                        },
+                        "required": [
+                            "AD Name","AD Description","Control ID","Control",
+                            "Control Description","Control Impact Zone","Citation","Guidance"
+                        ]
+                    }
                 },
                 "New Questions Creation": {
                     "type": "array",
@@ -116,6 +110,7 @@ if st.button("Generate JSON") and uploaded_files:
                             "Question Help": {"type": ["string", "null"]},
                             "Answer Sequence": {"type": "integer"},
                             "Answer Title": {"type": "string", "minLength": 1},
+                            "Answer Sentiment": {"type": "string", "enum": ["Positive", "Negative", "Neutral"]},
                             "Is Comment Required": {"type": "string", "enum": ["Yes", "No"]},
                             "Is Doc Required": {"type": "string", "enum": ["Yes", "No"]},
                             "Document Help": {"type": ["string", "null"]},
@@ -129,7 +124,7 @@ if st.button("Generate JSON") and uploaded_files:
         }
     }
 
-    # Call OpenAI API with function calling
+    # Call OpenAI API
     try:
         response = openai.chat.completions.create(
             model="gpt-5-mini",
@@ -147,7 +142,6 @@ if st.button("Generate JSON") and uploaded_files:
 
     except Exception as e:
         st.error(f"Error parsing JSON: {e}")
-        # Avoid NameError
         if 'response' in locals():
             st.write("Raw response:")
             st.write(response)
