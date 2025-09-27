@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 import json
 
-st.title("GRC JSON Extractor with Function Calling 1")
+st.title("GRC JSON Extractor with Function Calling 2")
 
 # Input OpenAI API key
 openai.api_key = st.text_input("Enter your OpenAI API Key", type="password")
@@ -130,8 +130,7 @@ if st.button("Generate JSON") and uploaded_files:
             model="gpt-5-mini",
             messages=[{"role": "user", "content": user_prompt}],
             functions=[function_schema],
-            function_call={"name": "return_questionnaire"},
-            temperature=0
+            function_call={"name": "return_questionnaire"}
         )
 
         function_response = response.choices[0].message["function_call"]["arguments"]
