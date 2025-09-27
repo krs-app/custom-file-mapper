@@ -38,7 +38,7 @@ if st.button("Generate JSON") and uploaded_files and openai.api_key:
 
     # 2️⃣ Build prompt
   user_prompt = f"""
-    You are a GRC expert. You are tasked with generating **ONE combined questionnaire** 
+  You are a GRC expert. You are tasked with generating **ONE combined questionnaire** 
     based on all uploaded files (PDFs and Excel sheets). Do NOT create separate 
     questionnaires per file or sheet. Merge all relevant AD, Citations, Controls, 
     Questions, Expected Answers, and Scores into a single questionnaire JSON. 
@@ -57,7 +57,8 @@ if st.button("Generate JSON") and uploaded_files and openai.api_key:
     
     **Files uploaded (partial content shown for context)**:
     {json.dumps([{f['filename']: f['content'][:2000]} for f in files_content], indent=2)}
-"""
+    
+  """
 
     # 3️⃣ Full function schema
     function_schema = {
