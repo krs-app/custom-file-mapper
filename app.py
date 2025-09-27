@@ -38,25 +38,25 @@ if st.button("Generate JSON") and uploaded_files and openai.api_key:
 
     # 2️⃣ Build prompt
   user_prompt = f"""
-You are a GRC expert. You are tasked with generating **ONE combined questionnaire** 
-based on all uploaded files (PDFs and Excel sheets). Do NOT create separate 
-questionnaires per file or sheet. Merge all relevant AD, Citations, Controls, 
-Questions, Expected Answers, and Scores into a single questionnaire JSON. 
-
-Follow this JSON schema strictly. 
-
-**Rules for questions and answers**:
-1. Auto-fill Question IDs with prefix 'N_' in incremental order (N_01, N_02, ...). 
-   - If the same question appears multiple times, use the same Question ID.
-2. Include 'Answer Sentiment' for each answer: Positive, Negative, Neutral.
-3. Assign Answer Sequence based on sentiment:
-   - Positive → 1
-   - Negative → 2
-   - Neutral/General → 3
-4. The JSON should strictly match the schema (Questionnaire, Questionnaire Sections, New AD-Citation-Control, New Questions Creation).
-
-**Files uploaded (partial content shown for context)**:
-{json.dumps([{f['filename']: f['content'][:2000]} for f in files_content], indent=2)}
+    You are a GRC expert. You are tasked with generating **ONE combined questionnaire** 
+    based on all uploaded files (PDFs and Excel sheets). Do NOT create separate 
+    questionnaires per file or sheet. Merge all relevant AD, Citations, Controls, 
+    Questions, Expected Answers, and Scores into a single questionnaire JSON. 
+    
+    Follow this JSON schema strictly. 
+    
+    **Rules for questions and answers**:
+    1. Auto-fill Question IDs with prefix 'N_' in incremental order (N_01, N_02, ...). 
+       - If the same question appears multiple times, use the same Question ID.
+    2. Include 'Answer Sentiment' for each answer: Positive, Negative, Neutral.
+    3. Assign Answer Sequence based on sentiment:
+       - Positive → 1
+       - Negative → 2
+       - Neutral/General → 3
+    4. The JSON should strictly match the schema (Questionnaire, Questionnaire Sections, New AD-Citation-Control, New Questions Creation).
+    
+    **Files uploaded (partial content shown for context)**:
+    {json.dumps([{f['filename']: f['content'][:2000]} for f in files_content], indent=2)}
 """
 
     # 3️⃣ Full function schema
