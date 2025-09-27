@@ -3,6 +3,7 @@ import openai
 import json
 import pdfplumber
 import pandas as pd
+import time
 
 st.title("GRC JSON Extractor with ChatGPT Function Calling (PDF + Excel)")
 
@@ -16,26 +17,37 @@ uploaded_files = st.file_uploader(
 )
 
 if st.button("Generate JSON") and uploaded_files and openai.api_key:
+    start_total = time.time()
     files_content = []
+    total_chunks_processed = 0
+
+    st.subheader("Processing Files")
+    file_progress = st.progress(0)
+    total_files = len(uploaded_files)
 
     # 1️⃣ Extract content from each file
-    for f in uploaded_files:
+    start_file_proc = time.time()
+    for idx, f in enumerate(uploaded_files, 1):
+        file_text = ""
         if f.name.lower().endswith(".pdf"):
-            text = ""
             with pdfplumber.open(f) as pdf:
                 for page in pdf.pages:
                     page_text = page.extract_text() or ""
-                    text += page_text + "\n"
-            files_content.append({"filename": f.name, "content": text})
+                    file_text += page_text + "\n"
+                    total_chunks_processed += 1
         elif f.name.lower().endswith(".xlsx"):
             excel_data = pd.read_excel(f, sheet_name=None)
-            text = ""
             for sheet_name, df in excel_data.items():
-                text += f"Sheet: {sheet_name}\n"
-                text += df.fillna("").to_csv(index=False) + "\n"
-            files_content.append({"filename": f.name, "content": text})
+                text = df.fillna("").to_csv(index=False)
+                file_text += f"Sheet: {sheet_name}\n{text}\n"
+                total_chunks_processed += 1
+        files_content.append({"filename": f.name, "content": file_text})
+        file_progress.progress(idx / total_files)
+    end_file_proc = time.time()
 
-    # 2️⃣ Build prompt with instructions for Question IDs & Answer Sentiment
+    st.success("File processing completed!")
+
+    # 2️⃣ Build prompt
     user_prompt = f"""
 You are a GRC expert. Analyze the following files and return a single questionnaire JSON exactly matching schema:
 
@@ -50,7 +62,7 @@ Rules:
 5. Identify AD, Citations, Controls, Questions, Expected Answer, Score, etc.
 """
 
-    # 3️⃣ Function schema (with Answer Sentiment included)
+    # 3️⃣ Full function schema
     function_schema = {
         "name": "return_questionnaire",
         "description": "Return the final questionnaire JSON exactly matching schema",
@@ -138,6 +150,9 @@ Rules:
     }
 
     # 4️⃣ Call GPT
+    st.subheader("Calling ChatGPT...")
+    gpt_progress = st.progress(0)
+    start_gpt = time.time()
     try:
         response = openai.chat.completions.create(
             model="gpt-5-mini",
@@ -145,12 +160,22 @@ Rules:
             functions=[function_schema],
             function_call={"name":"return_questionnaire"}
         )
+        gpt_progress.progress(1.0)
+        end_gpt = time.time()
 
         func_args = response.choices[0].message.function_call.arguments
         result_json = json.loads(func_args)
 
         st.subheader("Parsed JSON")
         st.json(result_json)
+
+        # 5️⃣ Display durations and chunk info
+        st.subheader("Processing Info")
+        st.write(f"Total files uploaded: {len(uploaded_files)}")
+        st.write(f"Total chunks processed: {total_chunks_processed}")
+        st.write(f"File processing duration: {round(end_file_proc - start_file_proc, 2)} seconds")
+        st.write(f"ChatGPT processing duration: {round(end_gpt - start_gpt, 2)} seconds")
+        st.write(f"Total duration: {round(time.time() - start_total, 2)} seconds")
 
     except Exception as e:
         st.error(f"Error: {e}")
